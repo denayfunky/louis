@@ -1,605 +1,397 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Guest Management</title>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<style>
-:root{--navy:#17365D;--green:#16834a;--red:#b42318;--bg:#f3f6fa}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:#172033;font-family:Arial,sans-serif}
-header{background:var(--navy);color:white;padding:18px 16px}
-header h1{font-size:19px;margin:0 0 5px}
-header p{font-size:12px;margin:0;opacity:.85}
-main{max-width:560px;margin:16px auto;padding:0 12px 28px}
-.card{background:white;border-radius:14px;padding:16px;margin-bottom:13px;box-shadow:0 2px 10px #13294b12}
-label{display:block;font-size:13px;font-weight:bold;margin:10px 0 6px}
-input[type="text"],input[type="number"],input:not([type]),select{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:white}
-button{border:0;background:var(--navy);color:white;padding:14px 16px;border-radius:10px;font-size:15px;font-weight:bold;width:100%;margin-top:12px;cursor:pointer}
-button:disabled{opacity:.55;cursor:not-allowed}
-button.secondary{background:#e8eef6;color:var(--navy)}
-#reader{width:100%;overflow:hidden;border-radius:12px;min-height:40px}
-.hint{font-size:12px;color:#64748b;line-height:1.5}
-#result{display:none;border-radius:12px;padding:16px;margin-top:12px}
-#result.good{display:block;background:#e5f5eb;border:1px solid #9ad3ae;color:#14532d}
-#result.bad{display:block;background:#fff0ed;border:1px solid #f2b4aa;color:#8a1c13}
-#result.info{display:block;background:#eff6ff;border:1px solid #93c5fd;color:#1e3a8a}
-#result h2{margin:0 0 7px;font-size:18px}
-#result p{margin:6px 0;font-size:14px;overflow-wrap:anywhere}
-.mode{display:inline-block;border-radius:99px;background:#e8eef6;color:var(--navy);padding:6px 10px;font-size:12px;font-weight:bold}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.api{font-size:11px;color:#64748b;overflow-wrap:anywhere}
-.actual-box{background:#fff;border:1px solid #9ad3ae;padding:12px;border-radius:8px;margin-top:10px}
-.actual-box.locked-box{border-color:#d97706;box-shadow:0 0 0 2px #fef3c7}
-.actual-box label{font-size:11px;margin:4px 0 2px;color:#14532d}
-.actual-box input[type="number"],.actual-box input[type="text"],.actual-box select{padding:8px;font-size:14px}
-.lock-note{background:#fffbeb;border:1px solid #f59e0b;color:#92400e;border-radius:8px;padding:8px 10px;font-size:12px;font-weight:bold;margin-top:8px}
-.check-row{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #86efac;padding:10px 12px;border-radius:8px;margin-top:10px;cursor:pointer}
-.check-row input[type="checkbox"]{width:20px;height:20px;accent-color:var(--green);margin:0;cursor:pointer;flex-shrink:0}
-.check-row span{font-size:14px;font-weight:bold;color:#14532d}
-.summary-pill{background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:13px;color:#1e293b;margin-top:8px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nadia Putri — Kreator Digital & Desainer</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Konfigurasi Tailwind untuk Font Inter & Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(15px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon Media Sosial & UI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body>
-<header>
-<h1>Grace and Irene</h1>
-<p>Birthday Louis • Marqen Hotel 28 November 2026</p>
-</header>
-<main>
-<section class="card">
-<span class="mode" id="modeLabel">CHECK-IN TAMU</span>
-<label>Mode transaksi</label>
-<select id="mode" onchange="changeMode()">
-<option value="checkin">Check-in tamu</option>
-<option value="souvenir">Penukaran souvenir</option>
-</select>
-<label>Nama petugas</label>
-<input id="operator" placeholder="Contoh: Resepsionis 1" autocomplete="name">
-</section>
+<body class="font-sans antialiased min-h-screen relative overflow-x-hidden transition-colors duration-300 bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">
 
-<section class="card">
-<label>Kamera</label>
-<select id="cameraSelect">
-<option value="">Kamera utama / belakang</option>
-</select>
-<div id="reader"></div>
-<p class="hint" id="cameraHint">Izinkan akses kamera. Gunakan Chrome dan tautan HTTPS.</p>
-<div class="row">
-<button onclick="startScanner()">Mulai kamera</button>
-<button class="secondary" onclick="stopScanner()">Hentikan</button>
-</div>
-<label>Input kode secara manual (opsional)</label>
-<input id="manualCode" placeholder="Tempel / ketik ID QR" onkeydown="if(event.key==='Enter'){event.preventDefault();manualSubmit();}">
-<button class="secondary" onclick="manualSubmit()">Proses kode manual</button>
-</section>
-
-<section id="result"></section>
-
-<section class="card">
-<p class="hint">Grace and Irene 2026.</p>
-<p class="api">API: <span id="apiStatus">Menghubungkan…</span></p>
-</section>
-</main>
-
-<script>
-// Ganti dengan URL Web App deployment Google Apps Script Anda (berakhiran /exec)
-const API_URL = 'https://script.google.com/macros/s/AKfycbyo0iCqvaG5-sSa_SuF_tRdKVK1M4WlZujG-VNs9uizXnDuYw9DqsZzGzScQTI74nVt2A/exec';
-
-let scanner = null;
-let busy = false;
-let pendingGiftRequired = false;
-let lastScanAt = 0;
-let cameras = [];
-const params = new URLSearchParams(location.search);
-
-function isValidApiUrl(url){
- return /^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec(?:\?.*)?$/.test(String(url || '').trim());
-}
-
-function currentMode(){
- return document.getElementById('mode').value;
-}
-
-function changeMode(){
- if(pendingGiftRequired){
-  document.getElementById('mode').value = 'checkin';
-  showResult(
-   'bad',
-   'Wajib Catat Angpao / Hadiah',
-   '<p>Tekan tombol <b>"🎀 Catat Angpao / Hadiah"</b> terlebih dahulu sebelum mengganti mode atau memindai tamu berikutnya.</p>'
-  );
-  return;
- }
- document.getElementById('modeLabel').textContent =
-  currentMode() === 'souvenir' ? 'PENUKARAN SOUVENIR' : 'CHECK-IN TAMU';
- showResult('', '', '');
-}
-
-function esc(s){
- return String(s ?? '').replace(/[&<>"']/g, c => ({
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#39;'
- }[c]));
-}
-
-function showResult(kind, title, detail){
- const b = document.getElementById('result');
- if(!kind){
-  b.style.display = 'none';
-  b.className = '';
-  b.innerHTML = '';
-  return;
- }
- b.style.display = 'block';
- b.className = kind;
- b.innerHTML = '<h2>' + esc(title) + '</h2>' + detail;
- b.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-function pauseScannerSafe(){
- try{
-  if(scanner && typeof scanner.getState === 'function'){
-   if(scanner.getState() === 2){
-    scanner.pause(true);
-   }
-  } else if(scanner && scanner.isScanning){
-   scanner.pause(true);
-  }
- }catch(e){}
-}
-
-function resumeScannerSafe(){
- try{
-  if(scanner && typeof scanner.getState === 'function'){
-   if(scanner.getState() === 3){
-    scanner.resume();
-    return;
-   }
-   if(scanner.getState() === 2){
-    return;
-   }
-  }
-  if(scanner && scanner.isScanning){
-   scanner.resume();
-  } else {
-   startScanner();
-  }
- }catch(e){
-  startScanner();
- }
-}
-
-function parseApiTextResponse_(txt){
- const clean = String(txt || '').trim();
- const jsonpMatch = clean.match(/^[A-Za-z_$][0-9A-Za-z_$\.]*\((.*)\);?$/s);
- return JSON.parse(jsonpMatch ? jsonpMatch[1] : clean);
-}
-
-function runJsonpFallback(payload, resolve, reject, fetchReason){
- const callback = 'gasCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
- const script = document.createElement('script');
- script.async = true;
- let finished = false;
-
- const timer = setTimeout(() => {
-  finish(new Error('Timeout JSONP (fetch: ' + fetchReason + ')'));
- }, 25000);
-
- function finish(err, data){
-  if(finished) return;
-  finished = true;
-  clearTimeout(timer);
-  try{ delete window[callback]; }catch(e){ window[callback] = undefined; }
-  if(script.parentNode) script.remove();
-  err ? reject(err) : resolve(data);
- }
-
- window[callback] = data => finish(null, data);
-
- const query = new URLSearchParams({
-  ...payload,
-  callback,
-  _: Date.now().toString()
- });
-
- script.onerror = () => {
-  finish(new Error('Script JSONP error (fetch: ' + fetchReason + ')'));
- };
-
- script.src = API_URL + '?' + query.toString();
- document.head.appendChild(script);
-}
-
-function callAppsScript(payload){
- return new Promise((resolve, reject) => {
-  if(!isValidApiUrl(API_URL)){
-   reject(new Error('API_URL belum diatur ke URL Web App Google Apps Script (/exec) yang valid.'));
-   return;
-  }
-
-  const query = new URLSearchParams({
-   ...payload,
-   _: Date.now().toString()
-  });
-  const targetUrl = API_URL + '?' + query.toString();
-
-  if(typeof fetch === 'function'){
-   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-   const fetchTimer = setTimeout(() => {
-    if(controller) controller.abort();
-   }, 15000);
-
-   fetch(targetUrl, {
-    method: 'GET',
-    redirect: 'follow',
-    cache: 'no-store',
-    signal: controller ? controller.signal : undefined
-   })
-   .then(r => {
-    clearTimeout(fetchTimer);
-    if(!r.ok) throw new Error('Fetch HTTP ' + r.status);
-    return r.text();
-   })
-   .then(txt => {
-    resolve(parseApiTextResponse_(txt));
-   })
-   .catch(fetchErr => {
-    clearTimeout(fetchTimer);
-    const fetchMsg = fetchErr && fetchErr.message ? fetchErr.message : String(fetchErr);
-    runJsonpFallback(payload, resolve, reject, fetchMsg);
-   });
-   return;
-  }
-
-  runJsonpFallback(payload, resolve, reject, 'Fetch tidak tersedia');
- });
-}
-
-function normalizeQrCode(value){
- let code = String(value ?? '').normalize('NFKC')
-  .replace(/[\u200B-\u200D\uFEFF]/g, '')
-  .replace(/[\u0000-\u001F\u007F]/g, '')
-  .trim();
-
- if(/^https?:\/\//i.test(code)){
-  try{
-   const u = new URL(code);
-   const fromUrl = u.searchParams.get('code') || u.searchParams.get('id') || u.searchParams.get('qr');
-   if(fromUrl) code = fromUrl.trim();
-  }catch(e){}
- }
- return code;
-}
-
-function toggleCheckinForm(){
- const chk = document.getElementById('chkSesuai');
- const form = document.getElementById('checkinActualForm');
- if(!chk || !form) return;
- form.style.display = chk.checked ? 'none' : 'block';
-}
-
-function toggleSouvenirForm(){
- const chk = document.getElementById('chkSouvSesuai');
- const form = document.getElementById('souvActualForm');
- if(!chk || !form) return;
- form.style.display = chk.checked ? 'none' : 'block';
-}
-
-function processCode(rawCode, overrideData = null){
- const code = normalizeQrCode(rawCode);
- if(busy) return;
-
- if(pendingGiftRequired && !(overrideData && overrideData.isUpdate)){
-  pauseScannerSafe();
-  showResult(
-   'bad',
-   'Wajib Catat Angpao / Hadiah',
-   '<p>Silakan tekan tombol <b>"🎀 Catat Angpao / Hadiah"</b> terlebih dahulu sebelum scan tamu berikutnya.</p>'
-  );
-  return;
- }
-
- if(!code){
-  showResult('bad', 'Kode QR kosong', '<p>QR terbaca, tetapi tidak berisi kode.</p>');
-  return;
- }
-
- const operator = document.getElementById('operator').value.trim();
- if(!operator){
-  pauseScannerSafe();
-  showResult(
-   'bad',
-   'Isi nama resepsionis',
-   '<p>Masukkan nama resepsionis terlebih dahulu, lalu klik tombol di bawah untuk melanjutkan scan.</p>' +
-   '<button onclick="resumeScanner()" style="background:var(--navy); margin-top:12px;">Lanjutkan Scan</button>'
-  );
-  return;
- }
-
- busy = true;
- pauseScannerSafe();
- showResult('info', 'Memproses QR…', '<p>Kode: <b>' + esc(code) + '</b> sedang dikirim ke server.</p>');
-
- const isUpdate = Boolean(overrideData && overrideData.isUpdate);
- const payload = {
-  action: 'scan',
-  code,
-  mode: currentMode(),
-  operator,
-  userAgent: navigator.userAgent,
-  isUpdate: isUpdate ? 'true' : 'false'
- };
-
- if(overrideData){
-  if(overrideData.adults !== undefined) payload.adults = overrideData.adults;
-  if(overrideData.children !== undefined) payload.children = overrideData.children;
-  if(overrideData.nannies !== undefined) payload.nannies = overrideData.nannies;
-  if(overrideData.qtySouvenir !== undefined) payload.qtySouvenir = overrideData.qtySouvenir;
-  if(overrideData.penukar !== undefined) payload.penukar = overrideData.penukar;
-  if(overrideData.giftType !== undefined) payload.giftType = overrideData.giftType;
-  if(overrideData.giftNote !== undefined) payload.giftNote = overrideData.giftNote;
- }
-
- callAppsScript(payload).then(res => {
-  const g = res.guest || {};
-  let d = '';
-
-  const isInitialCheckinSuccess = Boolean(g.name && currentMode() === 'checkin' && res.ok && !isUpdate);
-  if(isInitialCheckinSuccess){
-   pendingGiftRequired = true;
-  } else if(isUpdate && res.ok){
-   pendingGiftRequired = false;
-  }
-
-  if(g.name) d += '<p><b>Nama tamu:</b> ' + esc(g.name) + '</p>';
-  if(g.phone) d += '<p><b>No. telepon:</b> ' + esc(g.phone) + '</p>';
-  if(g.category) d += '<p><b>Kategori:</b> ' + esc(g.category) + '</p>';
-
-  if(isInitialCheckinSuccess){
-   d += `
-    <div class="summary-pill">
-      <b>Data Undangan:</b> Dewasa: <b>${esc(g.adults)}</b> | Anak: <b>${esc(g.children)}</b> | Suster: <b>${esc(g.nannies)}</b> | Souvenir: <b>${esc(g.qtySouvenir)}</b>
+    <!-- Latar Belakang Dekoratif (Ambient Gradient Blobs) -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-72 h-72 sm:w-96 sm:h-96 bg-purple-400/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-72 h-72 sm:w-96 sm:h-96 bg-indigo-400/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 2s;"></div>
+        <div class="absolute bottom-[-10%] left-[20%] w-72 h-72 sm:w-96 sm:h-96 bg-pink-400/30 dark:bg-pink-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl animate-blob" style="animation-delay: 4s;"></div>
     </div>
-    <label class="check-row" for="chkSesuai">
-      <input type="checkbox" id="chkSesuai" checked onchange="toggleCheckinForm()">
-      <span>Data kehadiran sesuai undangan (Otomatis masuk ke sheet Guest_Checkin)</span>
-    </label>
-    <div class="actual-box locked-box" style="margin-top:10px;">
-      <b>Angpao / Hadiah (Wajib Ditekan):</b>
-      <label>Jenis Pemberian</label>
-      <select id="giftType">
-        <option value="Angpao">Angpao</option>
-        <option value="Hadiah">Hadiah</option>
-        <option value="Angpao & Hadiah">Angpao &amp; Hadiah</option>
-        <option value="Tidak Ada">Tidak Ada</option>
-      </select>
-      <label>Keterangan / Nominal / Kado</label>
-      <input type="text" id="giftNote" placeholder="Contoh: Amplop putih / Kado bayi">
-      <button id="btnSaveGift" onclick="saveGiftOnly('${esc(code)}')" style="background:var(--navy); margin-top:8px; padding:10px;">🎀 Catat Angpao / Hadiah</button>
-      <div class="lock-note">Tombol "Scan Tamu Berikutnya" terkunci sampai "Catat Angpao / Hadiah" ditekan.</div>
+
+    <!-- Kontainer Utama (Maksimal lebar mobile-first yang nyaman dibaca) -->
+    <main class="max-w-lg mx-auto px-4 py-8 sm:py-12 flex flex-col items-center min-h-screen justify-between">
+        
+        <div class="w-full">
+            <!-- Bilah Atas: Tombol Tema (Terang/Gelap) & Tombol Bagikan Profil -->
+            <header class="w-full flex justify-between items-center mb-6 animate-fade-in-up">
+                <!-- Tombol Ganti Tema -->
+                <button id="themeToggle" aria-label="Ganti Tema Terang atau Gelap" class="p-3 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 text-slate-700 dark:text-amber-300">
+                    <i id="themeIcon" class="fa-solid fa-moon text-base w-5 h-5 flex items-center justify-center"></i>
+                </button>
+
+                <!-- Tombol Bagikan Halaman -->
+                <button id="openShareModal" aria-label="Bagikan Halaman Ini" class="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+                    <span>Bagikan</span>
+                </button>
+            </header>
+
+            <!-- Bagian Profil: Foto, Nama, Lencana Terverifikasi & Bio Singkat -->
+            <section class="flex flex-col items-center text-center mb-8 animate-fade-in-up" style="animation-delay: 0.1s;">
+                <!-- Bingkai Foto Profil dengan Gradient Ring -->
+                <div class="relative p-1 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-lg mb-4 group">
+                    <img 
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
+                        onerror="this.onerror=null; this.src='https://placehold.co/300x300/6366f1/ffffff?text=NP';"
+                        alt="Foto Profil Nadia Putri" 
+                        class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white dark:border-slate-900 transition-transform duration-300 group-hover:scale-[1.03]"
+                    >
+                    <!-- Indikator Status Online / Aktif -->
+                    <span title="Tersedia untuk kolaborasi" class="absolute bottom-1.5 right-1.5 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+                </div>
+
+                <!-- Nama & Lencana Verifikasi -->
+                <div class="flex items-center justify-center gap-1.5 mb-1">
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        Nadia Putri
+                    </h1>
+                    <i class="fa-solid fa-circle-check text-sky-500 text-base" title="Akun Terverifikasi"></i>
+                </div>
+
+                <!-- Username / Handle -->
+                <p class="text-xs sm:text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-3">
+                    @nadiaputri.studio
+                </p>
+
+                <!-- Bio Singkat -->
+                <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-sm leading-relaxed">
+                    UI/UX Designer & Kreator Konten Digital ✨ Membantu bisnis membangun identitas visual yang estetik dan berkesan.
+                </p>
+            </section>
+
+            <!-- Daftar Tombol Tautan Utama (Glassmorphism Cards) -->
+            <section class="w-full space-y-3.5 mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+                
+                <!-- Tautan 1: Unggulan / Highlight (Website & Portofolio) -->
+                <a href="https://contoh-portofolio.id" target="_blank" rel="noopener noreferrer" 
+                   class="group relative flex items-center justify-between w-full p-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg backdrop-blur-sm">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-semibold text-sm sm:text-base">Website & Portofolio Karya</span>
+                            <span class="block text-xs text-indigo-100">Lihat studi kasus desain terbaru 2026</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="hidden sm:inline-block text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-white/20">Baru</span>
+                        <i class="fa-solid fa-chevron-right text-xs opacity-75 group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Tautan 2: Konsultasi via WhatsApp -->
+                <a href="https://wa.me/6281234567890?text=Halo%20Nadia,%20saya%20tertarik%20bekerja%20sama" target="_blank" rel="noopener noreferrer" 
+                   class="group flex items-center justify-between w-full p-4 rounded-2xl bg-white/75 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:border-emerald-400/60 dark:hover:border-emerald-500/50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-100">Konsultasi & Kerja Sama (WhatsApp)</span>
+                            <span class="block text-xs text-slate-500 dark:text-slate-400">Respon cepat di jam kerja (09.00 - 17.00 WIB)</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 group-hover:text-emerald-500 transition-colors"></i>
+                </a>
+
+                <!-- Tautan 3: Katalog Produk Digital / Template -->
+                <a href="#katalog-produk" target="_blank" rel="noopener noreferrer" 
+                   class="group flex items-center justify-between w-full p-4 rounded-2xl bg-white/75 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:border-indigo-400/60 dark:hover:border-indigo-500/50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-100">Katalog Template Notion & Figma</span>
+                            <span class="block text-xs text-slate-500 dark:text-slate-400">Tingkatkan produktivitas kerjamu sekarang</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+
+                <!-- Tautan 4: Channel YouTube -->
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" 
+                   class="group flex items-center justify-between w-full p-4 rounded-2xl bg-white/75 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:border-rose-400/60 dark:hover:border-rose-500/50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/10 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-brands fa-youtube"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-100">Tutorial Desain di YouTube</span>
+                            <span class="block text-xs text-slate-500 dark:text-slate-400">Video baru setiap hari Sabtu</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+
+                <!-- Tautan 5: E-Book Gratis / Newsletter -->
+                <a href="#ebook-gratis" target="_blank" rel="noopener noreferrer" 
+                   class="group flex items-center justify-between w-full p-4 rounded-2xl bg-white/75 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:bg-white dark:hover:bg-slate-800 hover:border-sky-400/60 dark:hover:border-sky-500/50 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-100">Unduh E-Book Gratis: Panduan UI Pemula</span>
+                            <span class="block text-xs text-slate-500 dark:text-slate-400">Akses langsung tanpa biaya</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-download text-xs text-slate-400 group-hover:text-sky-500 transition-colors"></i>
+                </a>
+
+            </section>
+
+            <!-- Baris Ikon Media Sosial -->
+            #<section aria-label="Tautan Media Sosial" class="flex items-center justify-center gap-3 sm:gap-4 mb-10 animate-fade-in-up" style="animation-delay: 0.3s;">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                   class="w-11 h-11 rounded-full bg-white/75 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-pink-600 dark:hover:text-pink-400 hover:scale-110 hover:shadow-md transition-all duration-200">
+                    <i class="fa-brands fa-instagram text-lg"></i>
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok"
+                   class="w-11 h-11 rounded-full bg-white/75 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:scale-110 hover:shadow-md transition-all duration-200">
+                    <i class="fa-brands fa-tiktok text-lg"></i>
+                </a>
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)"
+                   class="w-11 h-11 rounded-full bg-white/75 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-sky-500 dark:hover:text-sky-400 hover:scale-110 hover:shadow-md transition-all duration-200">
+                    <i class="fa-brands fa-x-twitter text-lg"></i>
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+                   class="w-11 h-11 rounded-full bg-white/75 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 hover:shadow-md transition-all duration-200">
+                    <i class="fa-brands fa-linkedin-in text-lg"></i>
+                </a>
+                <a href="mailto:halo@nadiaputri.id" aria-label="Kirim Email"
+                   class="w-11 h-11 rounded-full bg-white/75 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 hover:shadow-md transition-all duration-200">
+                    <i class="fa-regular fa-envelope text-lg"></i>
+                </a>
+            #</section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-xs text-slate-400 dark:text-slate-500 py-2">
+            <p>&copy; 2026 Nadia Putri. Dibuat dengan sepenuh hati.</p>
+        </footer>
+
+    </main>
+
+    <!-- Modal Bagikan Profil (Share Modal) -->
+    <div id="shareModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-200">
+        <div class="w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl transform transition-all">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-slate-900 dark:text-white">Bagikan Profil Ini</h2>
+                <button id="closeShareModal" aria-label="Tutup Modal" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                Salin tautan di bawah ini atau bagikan langsung ke media sosial favoritmu.
+            </p>
+
+            <!-- Kotak Salin Tautan -->
+            <div class="flex items-center gap-2 p-2 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 mb-5">
+                <input id="profileUrlInput" type="text" readonly value="https://nadiaputri.id" 
+                       class="w-full bg-transparent text-xs sm:text-sm text-slate-700 dark:text-slate-200 px-2 focus:outline-none select-all">
+                <button id="copyLinkBtn" class="shrink-0 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold transition-all">
+                    Salin
+                </button>
+            </div>
+
+            <!-- Tombol Bagikan Cepat ke Platform -->
+            <div class="grid grid-cols-3 gap-2.5 text-center">
+                <a id="shareWaBtn" href="#" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 transition-colors">
+                    <i class="fa-brands fa-whatsapp text-xl text-emerald-500"></i>
+                    <span class="text-[11px] font-medium">WhatsApp</span>
+                </a>
+                <a id="shareXBtn" href="#" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-slate-700 dark:text-slate-200 transition-colors">
+                    <i class="fa-brands fa-x-twitter text-xl text-slate-800 dark:text-white"></i>
+                    <span class="text-[11px] font-medium">X / Twitter</span>
+                </a>
+                <button id="nativeShareBtn" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-700 dark:text-slate-200 transition-colors">
+                    <i class="fa-solid fa-share-nodes text-xl text-indigo-500"></i>
+                    <span class="text-[11px] font-medium">Lainnya</span>
+                </button>
+            </div>
+        </div>
     </div>
-    <div id="checkinActualForm" class="actual-box" style="display:none;">
-      <b>Input Jumlah Kehadiran Aktual (Tidak Sesuai):</b>
-      <div class="row">
-        <div><label>Dewasa</label><input type="number" id="actAdults" value="${esc(g.adults)}"></div>
-        <div><label>Anak</label><input type="number" id="actChildren" value="${esc(g.children)}"></div>
-      </div>
-      <div class="row">
-        <div><label>Suster</label><input type="number" id="actNannies" value="${esc(g.nannies)}"></div>
-        <div><label>Souvenir</label><input type="number" id="actSouvenir" value="${esc(g.qtySouvenir)}"></div>
-      </div>
-      <button onclick="saveCheckin('${esc(code)}')" style="background:var(--green); margin-top:8px; padding:10px;">💾 Simpan Konfirmasi Kehadiran</button>
+
+    <!-- Notifikasi Toast (Pesan Umpan Balik Salin Link) -->
+    <div id="toastNotification" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs sm:text-sm font-medium shadow-xl opacity-0 pointer-events-none transition-all duration-300 translate-y-3">
+        <i class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toastMessage">Tautan berhasil disalin!</span>
     </div>
-   `;
-  }
 
-  if(g.name && currentMode() === 'souvenir' && res.ok && !isUpdate){
-   d += `
-    <div class="summary-pill">
-      <b>Jatah Souvenir:</b> <b>${esc(g.qtySouvenir)}</b> pcs (a.n. ${esc(g.name)})
-    </div>
-    <label class="check-row" for="chkSouvSesuai">
-      <input type="checkbox" id="chkSouvSesuai" checked onchange="toggleSouvenirForm()">
-      <span>Pengambilan souvenir sesuai (Otomatis masuk ke sheet Souvenir_Redemption)</span>
-    </label>
-    <div id="souvActualForm" class="actual-box" style="display:none;">
-      <b>Input Detail Pengambilan Aktual (Jika Diwakilkan / Berbeda):</b>
-      <label>Nama Penukar</label>
-      <input type="text" id="actPenukar" value="${esc(g.name)}" placeholder="Nama pengambil">
-      <label>Jumlah Souvenir yang Diberikan</label>
-      <input type="number" id="actSouvQty" value="${esc(g.qtySouvenir)}">
-      <button onclick="saveSouvenir('${esc(code)}')" style="background:var(--green); margin-top:8px; padding:10px;">🎁 Konfirmasi Penukaran Souvenir</button>
-    </div>
-   `;
-  }
+    <!-- JavaScript Interaktif -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Pengaturan Tema Terang / Gelap (Dark Mode)
+            const htmlElement = document.documentElement;
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
 
-  d += '<p><b>Waktu server:</b> ' + esc(res.timestamp || '') + '</p>';
-  if(res.message) d += '<p>' + esc(res.message) + '</p>';
+            // Cek preferensi tema tersimpan atau preferensi sistem
+            const savedTheme = localStorage.getItem('bio_theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  if(!pendingGiftRequired){
-   d += '<button id="btnNextGuest" onclick="resumeScanner()" style="background:var(--green); margin-top:14px;">🔄 Scan Tamu Berikutnya</button>';
-  }
+            function applyTheme(isDark) {
+                if (isDark) {
+                    htmlElement.classList.add('dark');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    htmlElement.classList.remove('dark');
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
+            }
 
-  showResult(res.ok ? 'good' : 'bad', res.ok ? 'BERHASIL' : (res.status || 'GAGAL'), d || '<p>Respons server kosong.</p>');
-  document.getElementById('manualCode').value = '';
-  busy = pendingGiftRequired;
-  lastScanAt = Date.now();
- }).catch(err => {
-  showResult(
-   'bad',
-   'Gagal menghubungi server',
-   '<p>' + esc(err.message || err) + '</p><button onclick="resumeScanner()" style="background:var(--red); margin-top:14px;">Coba Lagi</button>'
-  );
-  busy = false;
-  lastScanAt = Date.now();
- });
-}
+            // Inisialisasi tema awal
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                applyTheme(true);
+            } else {
+                applyTheme(false);
+            }
 
-function saveGiftOnly(code){
- const btn = document.getElementById('btnSaveGift');
- if(btn) btn.disabled = true;
- const giftType = document.getElementById('giftType').value;
- const giftNote = document.getElementById('giftNote').value;
- busy = false;
- processCode(code, { giftType, giftNote, isUpdate: true });
-}
+            // Event klik tombol tema
+            themeToggleBtn.addEventListener('click', () => {
+                const isCurrentlyDark = htmlElement.classList.contains('dark');
+                const nextDark = !isCurrentlyDark;
+                applyTheme(nextDark);
+                localStorage.setItem('bio_theme', nextDark ? 'dark' : 'light');
+            });
 
-function saveCheckin(code){
- const adults = document.getElementById('actAdults').value;
- const children = document.getElementById('actChildren').value;
- const nannies = document.getElementById('actNannies').value;
- const qtySouvenir = document.getElementById('actSouvenir').value;
- const giftType = document.getElementById('giftType') ? document.getElementById('giftType').value : 'Belum diisi';
- const giftNote = document.getElementById('giftNote') ? document.getElementById('giftNote').value : '';
- busy = false;
- processCode(code, { adults, children, nannies, qtySouvenir, giftType, giftNote, isUpdate: true });
-}
+            // 2. Pengaturan Modal Bagikan & Salin Tautan
+            const shareModal = document.getElementById('shareModal');
+            const openShareModalBtn = document.getElementById('openShareModal');
+            const closeShareModalBtn = document.getElementById('closeShareModal');
+            const profileUrlInput = document.getElementById('profileUrlInput');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const shareWaBtn = document.getElementById('shareWaBtn');
+            const shareXBtn = document.getElementById('shareXBtn');
+            const nativeShareBtn = document.getElementById('nativeShareBtn');
+            const toastNotification = document.getElementById('toastNotification');
+            const toastMessage = document.getElementById('toastMessage');
 
-function saveSouvenir(code){
- const penukar = document.getElementById('actPenukar').value;
- const qtySouvenir = document.getElementById('actSouvQty').value;
- busy = false;
- processCode(code, { penukar, qtySouvenir, isUpdate: true });
-}
+            // Gunakan URL halaman saat ini secara otomatis (jika sudah di-hosting)
+            const currentUrl = window.location.href.startsWith('http') ? window.location.href : 'https://nadiaputri.id';
+            profileUrlInput.value = currentUrl;
 
-function onScanSuccess(decoded){
- const code = normalizeQrCode(decoded);
- const now = Date.now();
- if(busy || pendingGiftRequired || !code) return;
- if(now - lastScanAt < 1200) return;
- processCode(code);
-}
+            // Update tautan berbagi cepat
+            const shareText = encodeURIComponent('Cek profil dan tautan lengkap Nadia Putri di sini: ');
+            shareWaBtn.href = `https://api.whatsapp.com/send?text=${shareText}${encodeURIComponent(currentUrl)}`;
+            shareXBtn.href = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodeURIComponent(currentUrl)}`;
 
-function resumeScanner(){
- if(pendingGiftRequired){
-  showResult(
-   'bad',
-   'Wajib Catat Angpao / Hadiah',
-   '<p>Tekan tombol <b>"🎀 Catat Angpao / Hadiah"</b> terlebih dahulu sebelum scan tamu berikutnya.</p>'
-  );
-  return;
- }
- busy = false;
- showResult('', '', '');
- lastScanAt = 0;
- resumeScannerSafe();
-}
+            // Fungsi menampilkan Toast Notification
+            let toastTimeout;
+            function showToast(message) {
+                toastMessage.textContent = message;
+                toastNotification.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
+                toastNotification.classList.add('opacity-100', 'translate-y-0');
 
-async function refreshCameras(){
- try{
-  if(!navigator.mediaDevices?.getUserMedia) return;
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-  stream.getTracks().forEach(t => t.stop());
-  cameras = await Html5Qrcode.getCameras();
-  const sel = document.getElementById('cameraSelect');
-  sel.innerHTML = '';
-  cameras.forEach((c, i) => {
-   const o = document.createElement('option');
-   o.value = c.id;
-   o.textContent = c.label || ('Kamera ' + (i + 1));
-   sel.appendChild(o);
-  });
-  const back = cameras.find(c => /back|rear|environment|belakang/i.test(c.label));
-  if(back) sel.value = back.id;
- }catch(e){}
-}
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toastNotification.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
+                    toastNotification.classList.remove('opacity-100', 'translate-y-0');
+                }, 2500);
+            }
 
-async function startScanner(){
- if(pendingGiftRequired){
-  showResult(
-   'bad',
-   'Wajib Catat Angpao / Hadiah',
-   '<p>Tekan tombol <b>"🎀 Catat Angpao / Hadiah"</b> terlebih dahulu sebelum memulai scan baru.</p>'
-  );
-  return;
- }
- if(!window.Html5Qrcode){
-  showResult('bad', 'Library scanner tidak termuat', '<p>Periksa koneksi internet untuk memuat html5-qrcode.</p>');
-  return;
- }
- try{
-  if(!scanner) scanner = new Html5Qrcode('reader');
-  if(typeof scanner.getState === 'function' && scanner.getState() === 2){
-   return;
-  }
-  const id = document.getElementById('cameraSelect').value;
-  await scanner.start(
-   id || { facingMode: 'environment' },
-   { fps: 20, qrbox: { width: 240, height: 240 } },
-   onScanSuccess,
-   () => {}
-  );
-  document.getElementById('cameraHint').textContent = 'Kamera aktif. Arahkan QR ke kotak scan.';
- }catch(e){
-  showResult('bad', 'Kamera tidak dapat dibuka', '<p>' + esc(e.message || e) + '</p>');
- }
-}
+            // Buka & Tutup Modal
+            openShareModalBtn.addEventListener('click', () => {
+                shareModal.classList.remove('hidden');
+                shareModal.classList.add('flex');
+            });
 
-async function stopScanner(){
- try{
-  if(scanner && typeof scanner.getState === 'function'){
-   if(scanner.getState() === 2 || scanner.getState() === 3){
-    await scanner.stop();
-   }
-  } else if(scanner && scanner.isScanning){
-   await scanner.stop();
-  }
- }catch(e){}
-}
+            function closeModal() {
+                shareModal.classList.add('hidden');
+                shareModal.classList.remove('flex');
+            }
 
-function manualSubmit(){
- if(pendingGiftRequired){
-  showResult(
-   'bad',
-   'Wajib Catat Angpao / Hadiah',
-   '<p>Tekan tombol <b>"🎀 Catat Angpao / Hadiah"</b> terlebih dahulu sebelum memproses kode lain.</p>'
-  );
-  return;
- }
- const c = document.getElementById('manualCode').value.trim();
- if(!c){
-  showResult('bad', 'Kode kosong', '<p>Masukkan ID QR.</p>');
-  return;
- }
- processCode(c);
-}
+            closeShareModalBtn.addEventListener('click', closeModal);
+            shareModal.addEventListener('click', (e) => {
+                if (e.target === shareModal) closeModal();
+            });
 
-function checkApiConnection(){
- const statusEl = document.getElementById('apiStatus');
- if(!isValidApiUrl(API_URL)){
-  statusEl.textContent = 'Belum dikonfigurasi (isi API_URL)';
-  statusEl.style.color = '#b42318';
-  return;
- }
- statusEl.textContent = 'Menghubungkan…';
- statusEl.style.color = '#64748b';
+            // Fungsi Salin Tautan (kompatibel lintas browser & iframe)
+            copyLinkBtn.addEventListener('click', () => {
+                profileUrlInput.select();
+                profileUrlInput.setSelectionRange(0, 99999); // Untuk perangkat mobile
 
- callAppsScript({}).then(res => {
-  if(res && res.ok){
-   statusEl.textContent = 'Terhubung (' + (res.status || 'OK') + ')';
-   statusEl.style.color = '#16834a';
-  } else {
-   statusEl.textContent = 'Respons tidak sesuai';
-   statusEl.style.color = '#b42318';
-  }
- }).catch(err => {
-  statusEl.textContent = 'Gagal terhubung: ' + (err && err.message ? err.message : 'Error');
-  statusEl.style.color = '#b42318';
- });
-}
+                try {
+                    document.execCommand('copy');
+                    copyLinkBtn.textContent = 'Tersalin!';
+                    copyLinkBtn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+                    showToast('Tautan profil berhasil disalin ke papan klip!');
 
-window.addEventListener('load', () => {
- document.getElementById('mode').value = params.get('mode') === 'souvenir' ? 'souvenir' : 'checkin';
- changeMode();
- checkApiConnection();
- if(window.isSecureContext && window.Html5Qrcode){
-  refreshCameras();
- }
-});
-</script>
+                    setTimeout(() => {
+                        copyLinkBtn.textContent = 'Salin';
+                        copyLinkBtn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+                    }, 2000);
+                } catch (err) {
+                    showToast('Gagal menyalin tautan. Silakan salin secara manual.');
+                }
+            });
+
+            // Tombol Web Share API (untuk browser mobile modern)
+            nativeShareBtn.addEventListener('click', async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: document.title,
+                            text: 'Lihat profil dan tautan lengkap Nadia Putri:',
+                            url: currentUrl
+                        });
+                    } catch (err) {
+                        // Pengguna membatalkan dialog share
+                    }
+                } else {
+                    // Fallback jika browser desktop tidak mendukung Web Share API
+                    copyLinkBtn.click();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
